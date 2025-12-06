@@ -1,0 +1,61 @@
+#include <Servo.h>
+
+const int trigPin = 9;
+const int echoPin = 10;
+const int buzzerPin = 8;
+const int servoPin = 6;
+
+Servo myServo;
+
+int distance;
+int angle;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  myServo.attach(servoPin);
+}
+
+void loop() {
+  for (angle = 0; angle <= 180; angle += 2) {
+    myServo.write(angle);
+    distance = getDistance();
+    beepIfClose(distance);
+    sendData(angle, distance);
+    delay(50);
+  }
+
+  for (angle = 180; angle >= 0; angle -= 2) {
+    myServo.write(angle);
+    distance = getDistance();
+    beepIfClose(distance);
+    sendData(angle, distance);
+    delay(50);
+  }
+}
+
+int getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  long duration = pulseIn(echoPin, HIGH);
+  return duration * 0.034 / 2;
+}
+
+void beepIfClose(int dist) {
+  if (dist > 0 && dist < 15) {
+    digitalWrite(buzzerPin, HIGH);
+    delay(100);
+    digitalWrite(buzzerPin, LOW);
+  }
+}
+
+void sendData(int angle, int dist) {
+  Serial.print(angle);
+  Serial.print(",");
+  Serial.println(dist);
+}
